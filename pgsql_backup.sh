@@ -5,7 +5,7 @@
 
 BACKUP_DIR=/pg_backup
 DAYS_TO_KEEP=14
-FILE=`date +"%Y%m%d"`_pg_backup.sql
+FILE=`date +"%Y%m%d%H%M"`_pg_backup.sql
 DATABASE=
 USER=postgres
 
