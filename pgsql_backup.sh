@@ -1,3 +1,4 @@
+#!/bin/bash
 #
 # Backup a Postgresql database into a daily file.
 #
