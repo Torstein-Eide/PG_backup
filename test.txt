@@ -1,0 +1,4 @@
+ postgres  
+ synapse   
+ template0 
+ template1 
