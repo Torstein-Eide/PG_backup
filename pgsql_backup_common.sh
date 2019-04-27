@@ -6,10 +6,10 @@ PSQL="$(which psql)"
 PSQLDUMP="$(which ps_dump)"
 PXZ="$(which pxz)"
 
-if [ -z $PXZ ] || [ -z $ ] 
+if [ -z $PXZ ] || [ -z $PSQL ] || [ -z $PSQLDUMP ]
 then
  echo "missing dependeces"
-  apt install pigz m
+  apt install pigz postgresql-client-10
 fi
 
 
@@ -23,9 +23,9 @@ GOOD="${GREEN}NO${NC}"
 BAD="${RED}YES${NC}"
 
 # Set these variables
-MyUSER="backup"	# DB_USERNAME # edit me
-MyPASS="2001:4661:4f72:0"	# DB_PASSWORDc
-MyHOST="localhost"	# DB_HOSTNAME # edit me
+PS_USER="backupuser"	# DB_USERNAME # edit me
+PS_PASS=""	# DB_PASSWORDc
+PS_HOST="localhost"	# DB_HOSTNAME # edit me
 
 # Backup Dest directory
 TEMPdir="/tmp/$scriptname"
@@ -41,13 +41,11 @@ NOW="$(date +"%Y-%m-%d_%H%M")"
 MBD="$TEMPdir/$NOW/mysql"
 
 # DB skip list
-SKIP="information_schema
-performance_schema
-another_one_db"
+SKIP="template0
+template1"
 
 # Get all databases
-# su - postgres -c "psql -lqtA" | cut -d \| -f 1 | grep -v "^\W*$\|^postgres\="
-DBS="$($MYSQL -h $MyHOST -u $MyUSER -p$MyPASS -Bse 'show databases')"
+DBS="$(su - $PS_USER -c "psql -lqtA" | cut -d \| -f 1 | grep -v "^\W*$\|^postgres\=")"
 echo -e "${NC}list of databases:"
 for i in $DBS
 do
