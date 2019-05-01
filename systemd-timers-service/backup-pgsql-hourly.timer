@@ -1,0 +1,8 @@
+[Unit]
+Description=backup PostgreSQL databases timer
+
+[Timer]
+OnCalendar=*-*-* *:31:00
+
+[Install]
+WantedBy=timers.target
