@@ -3,7 +3,7 @@
 #control for dependeces
 # Linux bin paths
 PSQL="$(which psql)"
-PSQLDUMP="$(which ps_dump)"
+PSQLDUMP="$(which pg_dump)"
 PXZ="$(which pxz)"
 
 if [ -z $PXZ ] || [ -z $PSQL ] || [ -z $PSQLDUMP ]
@@ -12,6 +12,16 @@ then
   apt install pigz postgresql-client-10
 fi
 
+# Set these variables
+export PS_USER="backupuser"	# DB_USERNAME # edit me
+export PSPASS=""	# DB_PASSWORDc
+export PGHOST="localhost"	# DB_HOSTNAME # edit me
+
+# Backup Dest directory
+TEMPdir="/tmp/$scriptname"
+
+# Email for notifications
+EMAIL=
 
 #Text Colors
 GREEN=`tput setaf 2`
@@ -21,18 +31,6 @@ NC=`tput sgr0` #No color
 #Output Strings
 GOOD="${GREEN}NO${NC}"
 BAD="${RED}YES${NC}"
-
-# Set these variables
-PS_USER="backupuser"	# DB_USERNAME # edit me
-PS_PASS=""	# DB_PASSWORDc
-PS_HOST="localhost"	# DB_HOSTNAME # edit me
-
-# Backup Dest directory
-TEMPdir="/tmp/$scriptname"
-
-# Email for notifications
-EMAIL=
-
 
 # Get date in dd-mm-yyyy format
 NOW="$(date +"%Y-%m-%d_%H%M")"
@@ -45,7 +43,7 @@ SKIP="template0
 template1"
 
 # Get all databases
-DBS="$(su - $PS_USER -c "psql -lqtA" | cut -d \| -f 1 | grep -v "^\W*$\|^postgres\=")"
+DBS="$(psql -lqtA | cut -d \| -f 1 | grep -v "^\W*$\|^postgres\=")"
 echo -e "${NC}list of databases:"
 for i in $DBS
 do
@@ -65,7 +63,7 @@ then
 	echo "Directory does not $DEST exist, making dir"
 	mkdir -v $DEST || echo "problem exiting" | exit
 	chmod 700 $DEST
-else 
+else
 	echo "Directory $DEST exist"
 	fi
 
@@ -73,13 +71,6 @@ else
 dbdump() {
 skipdb=-1
 START="$(date "+%s%N")"
-if [ "$db" == "mysql" ];
-  then
-   SKIPLOG="--skip-lock-tables"
-  else
-   SKIPLOG=""
- fi
-
 if [ "$SKIP" != "" ];
   then
     for i in $SKIP
@@ -91,11 +82,11 @@ if [ "$SKIP" != "" ];
     if [ "$skipdb" == "-1" ]
      then
         FILE="$MBD/$db.sql"
-		
-        $MYSQLDUMP -h $MyHOST -u $MyUSER -p$MyPASS $db > $FILE 
+
+        $PSQLDUMP  $db > $FILE
 		TT=$(printf %.4f "$(("$(date "+%s%N")" - $START))e-9")
 		echo "extracted $GREEN$db${NC} $TT s"
-		
+
      else
         echo "skiping   $RED$db${NC}"
     fi
