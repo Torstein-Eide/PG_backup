@@ -1,4 +1,7 @@
-# THIS the common config file, do not run this directly
+
+#!/bin/bash
+
+###### THIS the common config file, do not run this directly
 
 #control for dependeces
 # Linux bin paths
@@ -13,8 +16,8 @@ then
 fi
 
 # Set these variables
-export PS_USER="backupuser"	# DB_USERNAME # edit me
-export PSPASS=""	# DB_PASSWORDc
+export PGUSER="backupuser"	# DB_USERNAME # edit me
+export PGPASSWORD=""	# DB_PASSWORDc
 export PGHOST="localhost"	# DB_HOSTNAME # edit me
 
 # Backup Dest directory
@@ -43,7 +46,7 @@ SKIP="template0
 template1"
 
 # Get all databases
-DBS="$(psql -lqtA | cut -d \| -f 1 | grep -v "^\W*$\|^postgres\=")"
+DBS="$(psql -lqtA | cut -d \| -f 1 | +sed -e 's/^\s*//' -e '/^$/d')" || exit
 echo -e "${NC}list of databases:"
 for i in $DBS
 do
@@ -83,12 +86,16 @@ if [ "$SKIP" != "" ];
      then
         FILE="$MBD/$db.sql"
 
-        $PSQLDUMP  $db > $FILE
-		TT=$(printf %.4f "$(("$(date "+%s%N")" - $START))e-9")
-		echo "extracted $GREEN$db${NC} $TT s"
+        if $PSQLDUMP  $db > /dev/null ; then
+          $PSQLDUMP  $db -f $FILE
+          TT=$(printf %.4f "$(("$(date "+%s%N")" - $START))e-9")
+          echo "Extracted $GREEN$db${NC} $TT s"
+        else
+          echo "Extracted $db${NC} ${RED}FAILED${NC}"
+        fi
 
      else
-        echo "skiping   $RED$db${NC}"
+        echo "Skiping   $RED$db${NC}"
     fi
 }
 
@@ -107,7 +114,7 @@ wait
 # Archive the directory, send mail and cleanup
 cd $TEMPdir
 du -hs $TEMPdir
-tar -I "pxz -1" -cf $DEST/$NOW.tar.xz $NOW
+tar -I "xz -T 0" -cf $DEST/$NOW.tar.xz $NOW
 du -hs $DEST/$NOW.tar.xz
 #$GZIP -9 $NOW.tar
 cd /tmp
