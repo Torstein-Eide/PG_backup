@@ -8,7 +8,7 @@ cd $DIR
 #Used for Temp folder
 scriptname="$0"
 scriptname=${scriptname::-3}
-export scriptname=${scriptname:2}
+export scriptname=pgsql_backup_horly
 
 ############################################
 ###Remember to edit ./pgsql_backup_common.sh###
