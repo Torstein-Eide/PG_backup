@@ -7,10 +7,12 @@ install -d /etc/scripts
 
 cd /etc/scripts
 ```
-** wget https://raw.githubusercontent.com/Eideen/backupMysql/master/db_backup_daily.sh
+
+```
+wget https://raw.githubusercontent.com/Eideen/backupMysql/master/db_backup_daily.sh
 wget https://raw.githubusercontent.com/Eideen/backupMysql/master/db_backup_common.sh
-wget https://raw.githubusercontent.com/Eideen/backupMysql/master/db_backup_horly.sh **
-```chmod +x ./db_backup*.sh
+wget https://raw.githubusercontent.com/Eideen/backupMysql/master/db_backup_horly.sh
+chmod +x ./db_backup*.sh
 chmod 700 ./db_backup_common.sh
 ```
 ## make a backup user:
