@@ -29,10 +29,15 @@ date +%s | sha256sum | base64 | head -c 32 ; echo
 ```
 ## On the mysql server:
 ```
-mysql -u root -p
-CREATE USER 'DB_USERNAME'@'HOSTNAME' IDENTIFIED BY 'DB_PASSWORD';
-GRANT LOCK TABLES, SELECT, SHOW VIEW, RELOAD, REPLICATION CLIENT, EVENT, TRIGGER ON *.* TO 'DB_USERNAME'@'HOSTNAME' ;
-flush privileges;
+#### fix me
+ps -u root -p
+CREATE ROLE readaccess;
+CREATE USER backupuser WITH PASSWORD '123';
+GRANT CONNECT ON DATABASE mydb TO backupuser;
+GRANT SELECT ON ALL TABLES IN SCHEMA mySchema TO backupuser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA mySchema
+GRANT SELECT ON TABLES TO backupuser;
+
 ```
 ## edit the scripts to fit your setup:
 * DB_USERNAME
@@ -53,19 +58,19 @@ Number of days to save.
 Databases to skip.
 default is `information_schema` and `performance_schema`. One line per datebase.
 ```
-Nano db_backup_horly.sh db_backup_daily.sh
+Nano pgsql_backup_horly.sh pgsql_backup_daily.sh
 ```
 
 ## Now test your script:
 ```
-/etc/scripts/db_backup_horly.sh
-/etc/scripts/db_backup_daily.sh
+/etc/scripts/pgsql_backup_horly.sh
+/etc/scripts/pgsql_backup_daily.sh
 ```
 output example:
 >```
 >list of databases:
 >* information_schema
->* mysql
+>* pgsql
 >* performance_schema
 >folder /volum/@backup/mysql/daglig exist
 >skiping   information_schema
