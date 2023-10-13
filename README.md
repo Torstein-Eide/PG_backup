@@ -28,9 +28,9 @@ database backup user passowrd, make a random password.
 date +%s | sha256sum | base64 | head -c 32 ; echo
 ```
 ## On the mysql server:
-```
+```bash
 #### fix me
-ps -u root -p
+sudo -u postgres psql
 CREATE ROLE readaccess;
 CREATE USER backupuser WITH PASSWORD '123';
 GRANT CONNECT ON DATABASE mydb TO backupuser;
