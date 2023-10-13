@@ -33,6 +33,13 @@ date +%s | sha256sum | base64 | head -c 32 ; echo
 sudo -u postgres psql
 CREATE ROLE readaccess;
 CREATE USER backupuser WITH PASSWORD '123';
+GRANT CONNECT ON DATABASE postgres  TO readaccess;
+GRANT USAGE ON SCHEMA public TO readaccess;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO readaccess;
+GRANT readaccess TO backupuser;
+\q
+## old
+
 GRANT CONNECT ON DATABASE mydb TO backupuser;
 GRANT SELECT ON ALL TABLES IN SCHEMA mySchema TO backupuser;
 ALTER DEFAULT PRIVILEGES IN SCHEMA mySchema
