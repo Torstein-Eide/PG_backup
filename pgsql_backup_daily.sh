@@ -5,6 +5,11 @@ IFS=$'\n\t'
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 cd $DIR
 
+##################################
+#  Remember to edit ./config.sh  #
+##################################
+source config.sh
+
 #Used for Temp folder
 scriptname="$0"
 scriptname=${scriptname::-3}
@@ -20,7 +25,7 @@ export DAYS=31
 
 
 ## Backup Dest directory
-export DEST="/volum/@backup/pgsql/daily" # edit me
+export DEST="$DESTDIR/daily" # edit me
 
 ./pgsql_backup_common.sh
 

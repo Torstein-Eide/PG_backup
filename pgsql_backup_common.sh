@@ -12,12 +12,12 @@ PXZ="$(which pxz)"
 if [ -z $PXZ ] || [ -z $PSQL ] || [ -z $PSQLDUMP ]
 then
  echo "missing dependeces"
-  apt install pigz postgresql-client-10
+  apt install pxz postgresql-client-10
 fi
 
 # Set these variables
 export PGUSER="backupuser"	# DB_USERNAME # edit me
-export PGPASSWORD=""	# DB_PASSWORDc
+export PGPASSWORD="ZDIwOTcwYzMxNTdkNjVlNmZkODRhMDFj"	# DB_PASSWORDc
 export PGHOST="localhost"	# DB_HOSTNAME # edit me
 
 # Backup Dest directory
@@ -46,7 +46,7 @@ SKIP="template0
 template1"
 
 # Get all databases
-DBS="$(psql -lqtA | cut -d \| -f 1 | +sed -e 's/^\s*//' -e '/^$/d')" || exit
+DBS="$(psql -lqt | cut -d \| -f 1 | sed -e 's/^\s*//' -e '/^$/d')" || exit
 echo -e "${NC}list of databases:"
 for i in $DBS
 do
@@ -114,7 +114,7 @@ wait
 # Archive the directory, send mail and cleanup
 cd $TEMPdir
 du -hs $TEMPdir
-tar -I "xz -T 0" -cf $DEST/$NOW.tar.xz $NOW
+tar -I "pxz -T 0" -cf $DEST/$NOW.tar.xz $NOW
 du -hs $DEST/$NOW.tar.xz
 #$GZIP -9 $NOW.tar
 cd /tmp

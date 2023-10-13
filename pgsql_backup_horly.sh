@@ -21,7 +21,7 @@ MIN=$(expr $HOURS \* 60)
 
 
 ## Backup Dest directory
-export DEST="/volum/@backup/pgsql/time" # edit me
+export DEST="/volum1/@backup/pgsql/time" # edit me
 
 ./pgsql_backup_common.sh
 
