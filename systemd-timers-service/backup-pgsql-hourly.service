@@ -1,0 +1,10 @@
+[Unit]
+Description=backup pgsql databases
+Documentation=https://github.com/Eideen/PG_backup
+
+[Service]
+Type=oneshot
+WorkingDirectory=/etc/tilpasset/PG_backup/
+ExecStart=/etc/tilpasset/PG_backup/pgsql_backup_horly.sh
+User=backup
+Nice=19

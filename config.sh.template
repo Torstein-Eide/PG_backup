@@ -1,0 +1,13 @@
+export DESTDIR="/volum1/@backup/pgsql"
+# Set these variables
+export PGUSER="backupuser"  # DB_USERNAME # edit me
+export PGPASSWORD="MY super Secret password" # DB_PASSWORD # edit me
+export PGHOST="localhost" # DB_HOSTNAME # edit me
+
+# Backup Dest directory
+export TEMPdir="$(mktemp -d)"
+
+
+
+## Cleanup
+export DAYS=31

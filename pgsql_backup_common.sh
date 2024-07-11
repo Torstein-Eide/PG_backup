@@ -1,17 +1,22 @@
-# THIS the common config file, do not run this directly
+
+#!/bin/bash
+
+###### THIS the common config file, do not run this directly
 
 #control for dependeces
 # Linux bin paths
 PSQL="$(which psql)"
-PSQLDUMP="$(which ps_dump)"
-PXZ="$(which pxz)"
+PSQLDUMP="$(which pg_dump)"
+ZSTD="$(which zstd)"
 
-if [ -z $PXZ ] || [ -z $ ] 
+if [ -z $ZSTD ] || [ -z $PSQL ] || [ -z $PSQLDUMP ]
 then
  echo "missing dependeces"
-  apt install pigz m
+  apt install zstd postgresql-client-10
 fi
 
+# Email for notifications
+EMAIL=
 
 #Text Colors
 GREEN=`tput setaf 2`
@@ -22,18 +27,6 @@ NC=`tput sgr0` #No color
 GOOD="${GREEN}NO${NC}"
 BAD="${RED}YES${NC}"
 
-# Set these variables
-MyUSER="backup"	# DB_USERNAME # edit me
-MyPASS="2001:4661:4f72:0"	# DB_PASSWORDc
-MyHOST="localhost"	# DB_HOSTNAME # edit me
-
-# Backup Dest directory
-TEMPdir="/tmp/$scriptname"
-
-# Email for notifications
-EMAIL=
-
-
 # Get date in dd-mm-yyyy format
 NOW="$(date +"%Y-%m-%d_%H%M")"
 
@@ -41,13 +34,11 @@ NOW="$(date +"%Y-%m-%d_%H%M")"
 MBD="$TEMPdir/$NOW/mysql"
 
 # DB skip list
-SKIP="information_schema
-performance_schema
-another_one_db"
+SKIP="template0
+template1"
 
 # Get all databases
-# su - postgres -c "psql -lqtA" | cut -d \| -f 1 | grep -v "^\W*$\|^postgres\="
-DBS="$($MYSQL -h $MyHOST -u $MyUSER -p$MyPASS -Bse 'show databases')"
+DBS="$(psql -lqt | cut -d \| -f 1 | sed -e 's/^\s*//' -e '/^$/d')" || exit
 echo -e "${NC}list of databases:"
 for i in $DBS
 do
@@ -67,7 +58,7 @@ then
 	echo "Directory does not $DEST exist, making dir"
 	mkdir -v $DEST || echo "problem exiting" | exit
 	chmod 700 $DEST
-else 
+else
 	echo "Directory $DEST exist"
 	fi
 
@@ -75,13 +66,6 @@ else
 dbdump() {
 skipdb=-1
 START="$(date "+%s%N")"
-if [ "$db" == "mysql" ];
-  then
-   SKIPLOG="--skip-lock-tables"
-  else
-   SKIPLOG=""
- fi
-
 if [ "$SKIP" != "" ];
   then
     for i in $SKIP
@@ -93,13 +77,17 @@ if [ "$SKIP" != "" ];
     if [ "$skipdb" == "-1" ]
      then
         FILE="$MBD/$db.sql"
-		
-        $MYSQLDUMP -h $MyHOST -u $MyUSER -p$MyPASS $db > $FILE 
-		TT=$(printf %.4f "$(("$(date "+%s%N")" - $START))e-9")
-		echo "extracted $GREEN$db${NC} $TT s"
-		
+
+        if $PSQLDUMP  $db > /dev/null ; then
+          $PSQLDUMP  $db -f $FILE
+          TT=$(printf %.4f "$(("$(date "+%s%N")" - $START))e-9")
+          echo "Extracted $GREEN$db${NC} $TT s"
+        else
+          echo "Extracted $db${NC} ${RED}FAILED${NC}"
+        fi
+
      else
-        echo "skiping   $RED$db${NC}"
+        echo "Skiping   $RED$db${NC}"
     fi
 }
 
@@ -116,10 +104,10 @@ done
 #done
 wait
 # Archive the directory, send mail and cleanup
-cd $TEMPdir
+cd  $TEMPdir
 du -hs $TEMPdir
-tar -I "pxz -1" -cf $DEST/$NOW.tar.xz $NOW
-du -hs $DEST/$NOW.tar.xz
+tar -I "zstd --adapt=max=15 --adapt=min=3 -T0" -cf $DEST/$NOW.tar.zst $NOW
+du -hs $DEST/$NOW.tar.zst
 #$GZIP -9 $NOW.tar
 cd /tmp
 #remove temp file
@@ -127,11 +115,10 @@ rm -rf $TEMPdir
 
 if [ -n "$EMAIL" ]
 then
-echo "sant"
         echo "
         To: $EMAIL
-        Subject: MySQL backup
-        MySQL backup is completed! Backup name is $NOW.tar.gz" | ssmtp $EMAIL
+        Subject: PGSQL backup
+        PGSQL backup is completed! Backup name is $NOW.tar.zst" | ssmtp $EMAIL
 
 else
 echo "${RED}mail not setup${NC}"
